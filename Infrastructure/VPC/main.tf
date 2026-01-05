@@ -14,9 +14,12 @@ locals {
 }
 
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-  name   = "${var.name}-vpc"
-  cidr   = var.cidr
+  source                        = "terraform-aws-modules/vpc/aws"
+  name                          = "${var.name}-vpc"
+  cidr                          = var.cidr
+  manage_default_network_acl    = false
+  manage_default_route_table    = false
+  manage_default_security_group = false
 }
 
 resource "aws_subnet" "pub_sub" {
@@ -83,6 +86,6 @@ resource "aws_network_acl" "aws_pub_sub_acl" {
 
 resource "aws_network_acl_association" "aws_pub_sub_acl_association" {
   network_acl_id = aws_network_acl.aws_pub_sub_acl.id
-  for_each = local.pub_sub
+  for_each       = aws_subnet.pub_sub
   subnet_id      = each.value.id
 }
