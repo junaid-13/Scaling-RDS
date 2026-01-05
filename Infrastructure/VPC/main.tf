@@ -22,6 +22,10 @@ module "vpc" {
   manage_default_security_group = false
 }
 
+#############################
+######## Subnets ############
+#############################
+
 resource "aws_subnet" "pub_sub" {
   for_each          = local.pub_sub
   vpc_id            = module.vpc.vpc_id
@@ -42,6 +46,10 @@ resource "aws_subnet" "pri_sub" {
   }
 }
 
+#############################
+###### Internet Gateway #####
+#############################
+
 resource "aws_internet_gateway" "aws_igw" {
   vpc_id = module.vpc.vpc_id
   tags = {
@@ -54,6 +62,10 @@ resource "aws_internet_gateway_attachment" "aws_igw_attach" {
   internet_gateway_id = aws_internet_gateway.aws_igw.id
 }
 
+#############################
+###### Route Tables #########
+#############################
+
 resource "aws_route_table" "public_rt" {
   vpc_id = module.vpc.vpc_id
   route {
@@ -65,6 +77,31 @@ resource "aws_route_table" "public_rt" {
     name = "${var.name}-public-rt"
   }
 }
+
+resource "aws_route_table_association" "public_rt_assoc" {
+    for_each = aws_subnet.pub_sub
+    subnet_id = each.value.id
+  route_table_id = aws_route_table.public_rt.id
+}
+
+resource "aws_route_table" "private_rt" {
+    vpc_id = module.vpc.vpc_id
+    route {
+        cidr_block = var.cidr
+    }
+    tags = "${var.name}-private-rt"
+  
+}
+
+resource "aws_route_table_association" "private_rt_assoc" {
+  for_each = aws_subnet.pri_sub
+  subnet_id = each.value.id
+  route_table_id = aws_route_table.private_rt.id
+}
+
+#############################
+########## NACL #############
+#############################
 
 resource "aws_network_acl" "aws_pub_sub_acl" {
   vpc_id = module.vpc.vpc_id
