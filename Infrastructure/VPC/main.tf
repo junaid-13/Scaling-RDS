@@ -20,3 +20,13 @@ resource "aws_subnet" "pub_sub" {
   name = for_each["${var.name}-public-subnet-${each.key}"]
 }
 }
+
+resource "aws_subnet" "pri_sub" {
+  for_each = local.pri_sub
+  vpc_id = module.vpc.id
+  availability_zone = var.azs[each.value]
+  cidr_block = each.value
+  tags = {
+    name = for_each["${var.name}-private-subnet-${each.key}"]
+  }
+}
