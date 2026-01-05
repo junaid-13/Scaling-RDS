@@ -47,7 +47,7 @@ resource "aws_internet_gateway" "aws_igw" {
 }
 
 resource "aws_internet_gateway_attachment" "aws_igw_attach" {
-    vpc_id = module.vpc.vpc_id
+  vpc_id              = module.vpc.vpc_id
   internet_gateway_id = aws_internet_gateway.aws_igw.id
 }
 
@@ -64,14 +64,14 @@ resource "aws_route_table" "public_rt" {
 }
 
 resource "aws_network_acl" "aws_pub_sub_acl" {
-  vpc_id = module.vpc.Vpc_id
+  vpc_id = module.vpc.vpc_id
 
   ingress {
-    action = "allow"
-    rule_no = 100
-    from_port = 22
-    to_port = 22
-    protocol = "ssh"
+    action     = "allow"
+    rule_no    = 100
+    from_port  = 22
+    to_port    = 22
+    protocol   = "tcp"
     cidr_block = var.cidr
   }
 
@@ -83,5 +83,6 @@ resource "aws_network_acl" "aws_pub_sub_acl" {
 
 resource "aws_network_acl_association" "aws_pub_sub_acl_association" {
   network_acl_id = aws_network_acl.aws_pub_sub_acl.id
-  subnet_id = aws_subnet.pub_sub.id
+  for_each = local.pub_sub
+  subnet_id      = each.value.id
 }
