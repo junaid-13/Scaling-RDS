@@ -74,28 +74,29 @@ resource "aws_route_table" "public_rt" {
   }
 
   tags = {
-    name = "${var.name}-public-rt"
+    Name = "${var.name}-public-rt"
   }
 }
 
 resource "aws_route_table_association" "public_rt_assoc" {
-    for_each = aws_subnet.pub_sub
-    subnet_id = each.value.id
+  for_each       = aws_subnet.pub_sub
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.public_rt.id
 }
 
 resource "aws_route_table" "private_rt" {
-    vpc_id = module.vpc.vpc_id
-    route {
-        cidr_block = var.cidr
-    }
-    tags = "${var.name}-private-rt"
-  
+  vpc_id = module.vpc.vpc_id
+  route {
+    cidr_block = var.cidr
+  }
+  tags = {
+    Name = "${var.name}-private-rt"
+  }
 }
 
 resource "aws_route_table_association" "private_rt_assoc" {
-  for_each = aws_subnet.pri_sub
-  subnet_id = each.value.id
+  for_each       = aws_subnet.pri_sub
+  subnet_id      = each.value.id
   route_table_id = aws_route_table.private_rt.id
 }
 
