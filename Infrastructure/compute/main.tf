@@ -27,6 +27,11 @@ data "aws_ami" "ubuntu_ami" {
   }
 }
 
+
+#############################
+###### Security Group #######
+#############################
+
 resource "aws_security_group" "bastion_sg" {
   vpc_id = module.vpc.vpc
   name   = "Main-sg"
@@ -52,4 +57,25 @@ resource "aws_vpc_security_group_egress_rule" "default-egress" {
   cidr_ipv4 = "0.0.0.0/0"
   from_port         = 0
   to_port           = 0
+}
+
+
+#############################
+######## Key Pair ###########
+#############################
+
+resource "tls_private_key" "bastion_key" {
+  algorithm = "RSA"
+  rsa_bits = 4096
+}
+
+resource "local_file" "tls_private_key" {
+  content = tls_private_key.bastion_key.private_key_pem
+  filename = pathexpand("${aws_key_pair.use_bastion_key.key_name}.pem")
+  file_permission = "0600"
+}
+
+resource "aws_key_pair" "use_bastion_key" {
+  key_name = "bastion-key"
+  public_key = tls_private_key.bastion_key.public_key_openssh
 }
